@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .chat-body {
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .user-message {
+            background-color: #e5e5ea;
+            border-radius: 8px;
+            padding: 8px 12px;
+            max-width: 70%;
+            display: flex; /* Use flexbox */
+            align-items: center; /* Center items vertically */
+            margin-bottom: 20px; /* Increase margin between user messages */
+            text-align: right; /* Align user messages to the right */
+            margin-left: auto; /* Push user messages to the right side */
+        }
+        .bot-message {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px;
+            padding: 16px 12px;
+            max-width: 70%;
+            display: flex; /* Use flexbox */
+            align-items: center; /* Center items vertically */
+            align-self: flex-end;
+            margin-bottom: 5px; /* Increase margin between bot messages */
+        }
+        .logo {
+            width: 40px; /* Adjust the width of the logo as needed */
+            height: 40px; /* Adjust the height of the logo as needed */
+            margin-right: 10px; /* Adjust the margin between the logo and the message content */
+        }
+        .user-logo {
+            float: right; /* Align user logo to the right */
+        }
+        .bot-logo {
+            float: left; /* Align bot logo to the left */
+        }
+        .input-container {
+            display: flex;
+            align-items: center; /* Center items vertically */
+            justify-content: space-between; /* Space items evenly */
+            background-color: #f9f9f9;
+            padding: 10px;
+        }
+        .input-field, #userId {
+            flex: 1;
+            width: 30%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+        }
+        .send-button, button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        .option-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Chatbot</div>
+        <div class="chat-body" id="chatBody">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="input-container">
+            <input type="text" class="input-field" id="user-input" placeholder="Type your message...">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <form id="recommendationForm" style="display: none;">
+        <div class="input-container">
+            <input type="text" id="userId" name="user_id" placeholder="Enter your User ID" required>
+            <button type="submit" class="send-button">Submit</button>
+        </div>
+    </form>
+
+    <script>
+        var chatBody = document.getElementById("chatBody");
+
+        var categories = {
+            'Batteries': {
+                'available': ['AAA Batteries (4-pack)', 'AA Batteries (4-pack)'],
+                'unavailable': []
+            },
+            'Headphones': {
+                'available': ['Wired Headphones', 'Apple Airpods Headphones', 'Bose SoundSport Headphones'],
+                'unavailable': []
+            },
+            'Smart TV': {
+                'available': ['27in FHD Monitor', '27in 4K Gaming Monitor', '34in Ultrawide Monitor', 'Flatscreen TV', '20in Monitor'],
+                'unavailable': []
+            },
+            'Smart Phones': {
+                'available': ['iPhone', 'Google Phone', 'Vareebadd Phone'],
+                'unavailable': ['Samsung Galaxy', 'Xiaomi Phone']
+            },
+            'Laptops': {
+                'available': ['Macbook Pro Laptop', 'ThinkPad Laptop'],
+                'unavailable': ['Lenovo IdeaPad']
+            },
+            'Cleaning Machines': {
+                'available': ['LG Washing Machine', 'LG Dryer'],
+                'unavailable': []
+            }
+        };
+
+        // Function to create a user message with logo
+        function createUserMessage(message) {
+            var messageNode = document.createElement("div");
+            messageNode.classList.add("user-message");
+            
+            var logo = document.createElement("img");
+            // Change the src attribute to a relative path
+            logo.src = "https://i.postimg.cc/1XmrRBjX/profile-1.png";
+            logo.alt = "User Logo";
+            logo.classList.add("logo");
+            logo.classList.add("user-logo"); // Add user logo class
+            
+            var content = document.createElement("span");
+            content.textContent = message;
+            
+            messageNode.appendChild(logo);
+            messageNode.appendChild(content);
+            
+            chatBody.appendChild(messageNode);
+        }
+
+        // Function to create a bot message with logo
+        function createBotMessage(message) {
+            var messageNode = document.createElement("div");
+            messageNode.classList.add("bot-message");
+            
+            var logo = document.createElement("img");
+            // Change the src attribute to a relative path
+            logo.src = "https://i.postimg.cc/GtGq99cg/chatbot-1.png";
+            logo.alt = "Bot Logo";
+            logo.classList.add("logo");
+            logo.classList.add("bot-logo"); // Add bot logo class
+            
+            var content = document.createElement("span");
+            content.textContent = message;
+            
+            messageNode.appendChild(logo);
+            messageNode.appendChild(content);
+            
+            chatBody.appendChild(messageNode);
+        }
+
+
+        // Function to append messages without replacing the existing ones
+        function appendBotMessage(message) {
+            createBotMessage(message);
+        }
+
+        // Function to handle sending user message
+        function sendMessage() {
+            var userInput = document.getElementById("user-input").value.trim();
+            if (userInput !== "") {
+                // Display user message
+                createUserMessage(userInput);
+                // Handle user input
+                handleUserInput(userInput);
+                // Clear input field
+                document.getElementById("user-input").value = "";
+            }
+        }
+
+        // Function to handle user input
+        function handleUserInput(userInput) {
+            // If the user input contains "recommendations" or "recommend", show the form to enter user ID
+            if (userInput.toLowerCase().includes("recommendations") || userInput.toLowerCase().includes("recommend")) {
+                document.getElementById("recommendationForm").style.display = "block";
+                // Hide the chat input field and send button
+                document.querySelector(".input-container").style.display = "none";
+                // Clear the chat input field
+                document.getElementById("user-input").value = "";
+                // Display a message prompting the user to enter their user ID
+                createBotMessage("Sure, please enter your User ID:");
+            } else if (userInput.toLowerCase().includes("yes")) {
+                // Ask for user's preference after previous assistance
+                appendBotMessage("Do you want to ask about specific products or specific categories?");
+                appendBotMessage("Options:");
+                // Add buttons for user's selection
+                var specificProductsButton = document.createElement("button");
+                specificProductsButton.classList.add("option-button");
+                specificProductsButton.textContent = "Specific Products";
+                specificProductsButton.onclick = function() { specificProductsButtonClick(); };
+                chatBody.appendChild(specificProductsButton);
+
+                var specificCategoriesButton = document.createElement("button");
+                specificCategoriesButton.classList.add("option-button");
+                specificCategoriesButton.textContent = "Specific Categories";
+                specificCategoriesButton.onclick = function() { specificCategoriesButtonClick(); };
+                chatBody.appendChild(specificCategoriesButton);
+            } else {
+                // Iterate over each category
+                for (var category in categories) {
+                    if (categories.hasOwnProperty(category)) {
+                        var availableProducts = categories[category]['available'];
+                        var unavailableProducts = categories[category]['unavailable'];
+
+                        // Check if the user input matches any available product in the category
+                        for (var i = 0; i < availableProducts.length; i++) {
+                            if (userInput.toLowerCase().includes(availableProducts[i].toLowerCase())) {
+                                createBotMessage("Yes, " + userInput + " is available from the " + category + " category.");
+                                return; // Exit the function after responding
+                            }
+                        }
+
+                        // Check if the user input matches any unavailable product in the category
+                        for (var j = 0; j < unavailableProducts.length; j++) {
+                            if (userInput.toLowerCase().includes(unavailableProducts[j].toLowerCase())) {
+                                // Provide alternative available products from the same category
+                                createBotMessage("No, " + userInput + " is not available, but we found alternative available products from the " + category + " category: " + availableProducts.join(", "));
+                                return; // Exit the function after responding
+                            }
+                        }
+                    }
+                }
+
+                // If no match is found, prompt the user to specify their request further
+                createBotMessage("Sorry, I didn't understand that. Please specify if you want recommendations or to ask about products.");
+            }
+        }
+
+
+        // Function to handle form submission
+        document.getElementById("recommendationForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch('/recommend', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display recommendations
+                data.forEach(function(recommendation) {
+                    var product = recommendation['Product Name'];
+                    var interaction = recommendation['Predicted Interaction'];
+                    var message = product + ' - Predicted Interaction: ' + interaction;
+                    appendBotMessage(message);
+                });
+                // Ask the user if they want anything else
+                appendBotMessage("Is there anything else I can assist you with? (Yes/No)");
+
+                // Hide the recommendation form
+                document.getElementById("recommendationForm").style.display = "none";
+                // Show the chat input field
+                document.querySelector(".input-container").style.display = "flex";
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+
+        // Function to greet the user
+        function greetUser() {
+            var greetingMessage = "Hello! I'm your Product Recommendations Chatbot. How can I assist you today?";
+            createBotMessage(greetingMessage);
+        }
+
+        // Call greetUser function when the page loads
+        window.onload = greetUser();
+
+        // Function to handle specific products button click
+        function specificProductsButtonClick() {
+            // Display message without clearing previous messages
+            createBotMessage("You selected to ask about specific products.");
+        }
+
+        // Function to handle specific categories button click
+        function specificCategoriesButtonClick() {
+            // Display message without clearing previous messages
+            createBotMessage("You selected to ask about specific categories.");
+            createBotMessage("Please select a category:");
+
+            // Add buttons for each category
+            for (var category in categories) {
+                if (categories.hasOwnProperty(category)) {
+                    var categoryButton = document.createElement("button");
+                    categoryButton.classList.add("option-button");
+                    categoryButton.textContent = category;
+                    categoryButton.onclick = function() { categoryButtonClick(this.textContent); };
+                    chatBody.appendChild(categoryButton);
+                }
+            }
+        }
+
+        // Function to handle category button click
+        function categoryButtonClick(selectedCategory) {
+            // Display message without clearing previous messages
+            createBotMessage("You selected the " + selectedCategory + " category.");
+
+            // Display all products in the selected category
+            createBotMessage("Products available in the " + selectedCategory + " category:");
+            categories[selectedCategory]['available'].forEach(function(product) {
+                createBotMessage("- " + product);
+            });
+        }
+
+        // Function to adjust the width of userId input field
+        function adjustUserIdWidth() {
+            var userInputField = document.getElementById('user-input');
+            var userIdField = document.getElementById('userId');
+            
+            // Get the computed width of user input field
+            var inputWidth = userInputField.offsetWidth;
+            
+            // Apply the same width to userId input field
+            userIdField.style.width = inputWidth + 'px';
+        }
+
+        // Call the adjustUserIdWidth function when the page loads and on window resize
+        window.onload = adjustUserIdWidth;
+        window.addEventListener('resize', adjustUserIdWidth);
+    </script>
+</body>
+</html>
